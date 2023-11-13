@@ -1,0 +1,132 @@
+spring:
+  application:
+    name: '@project.name@'
+  main:
+    allow-bean-definition-overriding: true
+  output:
+    ansi:
+      enabled: always
+
+logging:
+  file:
+    path: data/logs
+    name: ${logging.file.path}/${spring.application.name}.log
+
+server:
+  compression:
+    enabled: true
+  error:
+    whitelabel:
+      enabled: false
+  forward-headers-strategy: framework
+  http2:
+    enabled: true
+  port: 8761
+  shutdown: graceful
+
+management:
+  endpoint:
+    configprops:
+      show-values: always
+    env:
+      post:
+        enabled: true
+      show-values: always
+    health:
+      group:
+        liveness:
+          - include:
+              - livenessState
+            show-components: always
+        readiness:
+          - include:
+              - readinessState
+            show-components: always
+      probes:
+        add-additional-paths: true
+        enabled: true
+      show-components: always
+      show-details: always
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: '*'
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  info:
+    env:
+      enabled: true
+    git:
+      mode: full
+    java:
+      enabled: true
+    os:
+      enabled: true
+  metrics:
+    enable:
+      all: true
+  server:
+    add-application-context-header: true
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+eureka:
+  client:
+    fetch-registry: false
+    register-with-eureka: false
+    service-url:
+      defaultZone: http://localhost:${server.port}/eureka
+  instance:
+    appname: ${spring.application.name}
+    hostname: ${spring.application.name}
+    prefer-ip-address: true
+    health-check-url-path: ${management.endpoints.web.base-path:/actuator}/health
+    status-page-url-path: ${management.endpoints.web.base-path:/actuator}/info
+  server:
+    batch-replication: true
+    enable-replicated-request-compression: true
+    number-of-replication-retries: 1
+    rate-limiter-enabled: true
+  dashboard:
+    path: /dashboard
+  environment: ${spring.profiles.active:default}
+  datacenter: ${spring.application.name}
+
+springdoc:
+  api-docs:
+    groups:
+      enabled: true
+    resolve-schema-properties: true
+  cache:
+    disabled: true
+  disable-i18n: true
+  nullable-request-parameter-enabled: true
+  override-with-generic-response: true
+  pre-loading-enabled: true
+  show-actuator: true
+  swagger-ui:
+    deep-linking: true
+    default-model-rendering: model
+    disable-swagger-default-url: true
+    display-operation-id: true
+    display-request-duration: true
+    doc-expansion: none
+    groups-order: asc
+    operations-sorter: alpha
+    query-config-enabled: true
+    persist-authorization: true
+    show-common-extensions: true
+    show-extensions: true
+    syntax-highlight:
+      activated: true
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    use-root-path: true
+    with-credentials: true
+  writer-with-default-pretty-printer: true
+  writer-with-order-by-keys: true

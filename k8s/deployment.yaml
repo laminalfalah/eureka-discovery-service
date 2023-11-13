@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eureka-config
+  namespace: core
+data:
+  SPRING_MAIN_CLOUD_PLATFORM: 'kubernetes'
+  SPRING_PROFILES_ACTIVE: 'k8s'
+  MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: 'http://zipkin.core:9411/api/v2/spans'
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: 'http://eureka.core:8080/eureka'
+  SPRING_CLOUD_CONFIG_ENABLED: 'false'
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: eureka
+  namespace: core
+  labels:
+    k8s-app: eureka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: eureka
+  serviceName: 'eureka'
+  template:
+    metadata:
+      labels:
+        k8s-app: eureka
+    spec:
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 10.96.0.10
+        searches:
+          - default.svc.cluster.local
+          - svc.cluster.local
+          - cluster.local
+        options:
+          - name: ndots
+            value: "2"
+          - name: edns0
+      containers:
+        - name: eureka
+          image: laminalfalah/eureka:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8761
+          env:
+            - name: EUREKA_INSTANCE_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: TZ
+              value: Asia/Jakarta
+          envFrom:
+            - configMapRef:
+                name: eureka-config
+          volumeMounts:
+            - name: spring-log
+              mountPath: /home/eureka/data/logs
+      volumes:
+        - name: spring-log
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-headless
+  namespace: core
+spec:
+  clusterIP: None
+  selector:
+    k8s-app: eureka
+  ports:
+    - name: http
+      port: 8761
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka
+  namespace: core
+spec:
+  type: LoadBalancer
+  selector:
+    k8s-app: eureka
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
