@@ -19,6 +19,8 @@ metadata:
     k8s-app: eureka
 spec:
   replicas: 1
+  updateStrategy:
+    type: RollingUpdate
   selector:
     matchLabels:
       k8s-app: eureka
